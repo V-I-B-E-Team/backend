@@ -23,7 +23,7 @@ struct User {
 async fn get_user(Path(id): Path<u64>) -> Json<User> {
     Json(User {
         id,
-        name: "Karel".to_string(),
+        name: "Karel2".to_string(),
     })
 }
 
