@@ -12,6 +12,6 @@ FROM debian:bookworm-slim
 
 COPY --from=build /app/target/release/backend /usr/local/bin/backend
 
-EXPOSE 8080
+EXPOSE 8000
 
 CMD ["backend"]
