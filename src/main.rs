@@ -27,6 +27,19 @@ use utoipa_swagger_ui::SwaggerUi;
 //     })
 // }
 //
+
+#[derive(Serialize, ToSchema)]
+struct Health {
+    status: String,
+}
+
+#[utoipa::path(get, path = "/api/v1/health", responses((status = 200, body = Health)))]
+async fn get_health() -> Json<Health> {
+    Json(Health {
+        status: "ok".to_owned(),
+    })
+}
+
 #[derive(OpenApi)]
 // #[openapi(paths(get_user), components(schemas(User)))]
 struct ApiDoc;
@@ -34,7 +47,7 @@ struct ApiDoc;
 #[tokio::main]
 async fn main() {
     let app = Router::new()
-        // .route("/api/users/{id}", get(get_user))
+        .route("/api/v1/health", get(get_health))
         .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()))
         .layer(CorsLayer::permissive());
 
