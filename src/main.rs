@@ -33,7 +33,7 @@ struct Health {
     status: String,
 }
 
-#[utoipa::path(get, path = "/api/v1/health", responses((status = 200, body = Health)))]
+#[utoipa::path(get, path = "/api/v1/health", responses((status = 200, description = "The app is running fine" , body = Health)))]
 async fn get_health() -> Json<Health> {
     Json(Health {
         status: "ok".to_owned(),
@@ -41,7 +41,7 @@ async fn get_health() -> Json<Health> {
 }
 
 #[derive(OpenApi)]
-// #[openapi(paths(get_user), components(schemas(User)))]
+#[openapi(paths(get_health), components(schemas(Health)))]
 struct ApiDoc;
 
 #[tokio::main]
