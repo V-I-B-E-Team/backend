@@ -79,21 +79,29 @@ async fn main() -> mongodb::error::Result<()> {
     let mongo = Client::with_uri_str(mongo_uri).await?;
 
     let state = AppState { mongo };
+    let initialization_state = state.clone();
 
-    for attempt in 1..=30 {
-        match state
-            .mongo
-            .database("admin")
-            .run_command(doc! { "ping": 1 })
-            .await
-        {
-            Ok(_) => break,
-            Err(error) if attempt == 30 => return Err(error),
-            Err(_) => tokio::time::sleep(std::time::Duration::from_secs(2)).await,
+    tokio::spawn(async move {
+        for attempt in 1..=30 {
+            match initialization_state
+                .mongo
+                .database("admin")
+                .run_command(doc! { "ping": 1 })
+                .await
+            {
+                Ok(_) => {
+                    if let Err(error) = create_team(&initialization_state).await {
+                        eprintln!("Could not initialize team data: {error}");
+                    }
+                    return;
+                }
+                Err(error) if attempt == 30 => {
+                    eprintln!("MongoDB was not ready after 60 seconds: {error}");
+                }
+                Err(_) => tokio::time::sleep(std::time::Duration::from_secs(2)).await,
+            }
         }
-    }
-
-    create_team(&state).await?;
+    });
 
     let app = Router::new()
         .route("/api/v1/health", get(get_health))
