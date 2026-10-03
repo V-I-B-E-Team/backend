@@ -73,8 +73,10 @@ struct ApiDoc;
 
 #[tokio::main]
 async fn main() -> mongodb::error::Result<()> {
-    let mongo =
-        Client::with_uri_str("mongodb://root:procMIkradesHESLOzmrde@localhost:6767").await?;
+    let mongo_uri = std::env::var("MONGODB_URI").unwrap_or_else(|_| {
+        "mongodb://root:procMIkradesHESLOzmrde@localhost:6767/?authSource=admin".to_owned()
+    });
+    let mongo = Client::with_uri_str(mongo_uri).await?;
 
     let state = AppState { mongo };
 
