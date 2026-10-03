@@ -80,6 +80,19 @@ async fn main() -> mongodb::error::Result<()> {
 
     let state = AppState { mongo };
 
+    for attempt in 1..=30 {
+        match state
+            .mongo
+            .database("admin")
+            .run_command(doc! { "ping": 1 })
+            .await
+        {
+            Ok(_) => break,
+            Err(error) if attempt == 30 => return Err(error),
+            Err(_) => tokio::time::sleep(std::time::Duration::from_secs(2)).await,
+        }
+    }
+
     create_team(&state).await?;
 
     let app = Router::new()
